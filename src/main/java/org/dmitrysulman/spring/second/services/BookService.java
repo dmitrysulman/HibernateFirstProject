@@ -27,6 +27,10 @@ public class BookService {
     }
 
     public Page<Book> findAll(Integer page, Integer booksPerPage, Boolean sortByYear) {
+        Sort sort = Sort.unsorted();
+        if (Objects.nonNull(sortByYear) && sortByYear) {
+            sort = Sort.by("year");
+        }
         if (Objects.isNull(page) && Objects.isNull(booksPerPage) && Objects.isNull(sortByYear)) {
             return bookRepository.findAll(Pageable.unpaged());
         }
@@ -35,10 +39,6 @@ public class BookService {
         }
         if (Objects.isNull(booksPerPage)) {
             booksPerPage = 10;
-        }
-        Sort sort = Sort.unsorted();
-        if (Objects.nonNull(sortByYear) && sortByYear) {
-            sort = Sort.by("year");
         }
         return bookRepository.findAll(PageRequest.of(page, booksPerPage, sort));
     }

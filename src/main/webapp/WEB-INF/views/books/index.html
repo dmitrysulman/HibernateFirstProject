@@ -13,7 +13,8 @@
     <a href="/books/add">New book</a>
     <div th:if="${bookPage.getTotalPages()} > 1">
     <th:block th:each="page: ${#numbers.sequence(0, bookPage.getTotalPages() - 1)}">
-        <a th:text="${page}" th:href="@{/books(page=${page}, books_per_page=${bookPage.getSize()})}"></a>
+        <span th:if="${page} == ${bookPage.getNumber()}" th:text="${page} + 1"></span>
+        <a th:if="${page} != ${bookPage.getNumber()}" th:text="${page} + 1" th:href="@{/books(page=${page}, books_per_page=${bookPage.getSize()})}"></a>
     </th:block>
     </div>
 </body>
