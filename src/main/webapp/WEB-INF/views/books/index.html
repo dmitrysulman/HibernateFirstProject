@@ -6,10 +6,15 @@
 </head>
 <body>
     <p><a href="/people">Users</a> | Books</p>
-    <div th:each="book : ${books}">
+    <div th:each="book : ${bookPage.getContent()}">
         <a th:text="${book.getTitle()} + ', ' + ${book.getAuthor()} + ', ' + ${book.getYear()}" th:href="@{/books/{id}(id=${book.getId()})}"></a>
     </div>
     <hr>
     <a href="/books/add">New book</a>
+    <div th:if="${bookPage.getTotalPages()} > 1">
+    <th:block th:each="page: ${#numbers.sequence(0, bookPage.getTotalPages() - 1)}">
+        <a th:text="${page}" th:href="@{/books(page=${page}, books_per_page=${bookPage.getSize()})}"></a>
+    </th:block>
+    </div>
 </body>
 </html>
