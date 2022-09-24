@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.Objects;
 import java.util.Optional;
 
 @Controller
@@ -134,5 +135,18 @@ public class BooksController {
         }
 
         return "redirect:/books/" + id;
+    }
+
+    @GetMapping("/search")
+    public String search(@RequestParam(value = "text", required = false) String text,
+                         Model model) {
+        if (Objects.nonNull(text)) {
+            if (text.equals("")) {
+                return "redirect:/books/search";
+            }
+            model.addAttribute("text", text);
+            model.addAttribute("books", bookService.findByTitleStartingWith(text));
+        }
+        return "/books/search";
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -82,5 +83,9 @@ public class BookService {
         book.setPerson(null);
         book.setDateTaken(null);
         bookRepository.save(book);
+    }
+
+    public List<Book> findByTitleStartingWith(String title) {
+        return bookRepository.findByTitleStartingWithIgnoreCase(title);
     }
 }

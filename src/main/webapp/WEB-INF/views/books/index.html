@@ -11,6 +11,8 @@
     </div>
     <hr>
     <a href="/books/add">New book</a>
+    <br>
+    <a href="/books/search">Search book</a>
     <div th:if="${bookPage.getTotalPages()} > 1">
     <th:block th:each="page: ${#numbers.sequence(0, bookPage.getTotalPages() - 1)}">
         <span th:if="${page} == ${bookPage.getNumber()}" th:text="${page} + 1"></span>
