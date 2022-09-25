@@ -2,12 +2,16 @@ package org.dmitrysulman.spring.second.services;
 
 import org.dmitrysulman.spring.second.models.Book;
 import org.dmitrysulman.spring.second.models.Person;
-import org.dmitrysulman.spring.second.repositories.BookRepository;
 import org.dmitrysulman.spring.second.repositories.PersonRepository;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,12 +20,10 @@ import java.util.Optional;
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private final BookRepository bookRepository;
 
     @Autowired
-    public PersonService(PersonRepository personRepository, BookRepository bookRepository) {
+    public PersonService(PersonRepository personRepository) {
         this.personRepository = personRepository;
-        this.bookRepository = bookRepository;
     }
 
     public List<Person> findAll() {
@@ -43,17 +45,38 @@ public class PersonService {
     }
 
     @Transactional
-    public void update(int id, Person person) {
-        person.setId(id);
-        personRepository.save(person);
+    public Boolean update(int id, Person person) {
+        if (!personRepository.existsById(id)) {
+            return false;
+        } else {
+            person.setId(id);
+            personRepository.save(person);
+        }
+        return true;
     }
 
     @Transactional
-    public void delete(int id) {
-        personRepository.deleteById(id);
+    public Boolean delete(int id) {
+        if (!personRepository.existsById(id)) {
+            return false;
+        } else {
+            personRepository.deleteById(id);
+        }
+        return true;
     }
 
-    public List<Book> getBooksOfPerson(Person person) {
-        return bookRepository.findByPerson(person);
+    public List<Book> getBooksOfPersonById(int id) {
+        Optional<Person> person = personRepository.findById(id);
+        if (person.isPresent()) {
+            Hibernate.initialize(person.get().getBooks());
+            person.get().getBooks().forEach(
+                    book -> book.setBookOverdue(
+                            book.getDateTaken().before(Date.from(LocalDateTime.now().minusDays(10).toInstant(ZoneOffset.UTC)))
+                    )
+            );
+            return person.get().getBooks();
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

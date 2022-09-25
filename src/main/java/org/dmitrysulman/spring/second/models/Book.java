@@ -43,6 +43,9 @@ public class Book {
         this.year = year;
     }
 
+    @Transient
+    private Boolean isBookOverdue;
+
     public Book() {
     }
 
@@ -92,5 +95,14 @@ public class Book {
 
     public void setDateTaken(Date dateTaken) {
         this.dateTaken = dateTaken;
+    }
+
+
+    public Boolean getBookOverdue() {
+        return isBookOverdue;
+    }
+
+    public void setBookOverdue(Boolean bookOverdue) {
+        isBookOverdue = bookOverdue;
     }
 }

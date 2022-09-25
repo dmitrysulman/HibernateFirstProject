@@ -3,6 +3,7 @@ package org.dmitrysulman.spring.second.services;
 import org.dmitrysulman.spring.second.models.Book;
 import org.dmitrysulman.spring.second.models.Person;
 import org.dmitrysulman.spring.second.repositories.BookRepository;
+import org.dmitrysulman.spring.second.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +22,12 @@ import java.util.Optional;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final PersonRepository personRepository;
 
     @Autowired
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, PersonRepository personRepository) {
         this.bookRepository = bookRepository;
+        this.personRepository = personRepository;
     }
 
     public Page<Book> findAll(Integer page, Integer booksPerPage, Boolean sortByYear) {
@@ -55,34 +58,55 @@ public class BookService {
     }
 
     @Transactional
-    public void update(int id, Book book) {
-        book.setId(id);
-        bookRepository.save(book);
+    public Boolean update(int id, Book book) {
+        if (!bookRepository.existsById(id)) {
+            return false;
+        } else {
+            book.setId(id);
+            bookRepository.save(book);
+        }
+        return true;
     }
 
     @Transactional
-    public void delete(int id) {
-        bookRepository.deleteById(id);
-    }
-
-    public Optional<Person> getBookOwner(int id) {
-        Optional<Book> book = findOne(id);
-        return book.map(Book::getPerson);
-    }
-
-    @Transactional
-    public void assign(Book book, Person person) {
-        book.setPerson(person);
-        book.setDateTaken(new Date());
-        bookRepository.save(book);
-
+    public Boolean delete(int id) {
+        if (!bookRepository.existsById(id)) {
+            return false;
+        } else {
+            bookRepository.deleteById(id);
+        }
+        return true;
     }
 
     @Transactional
-    public void release(Book book) {
-        book.setPerson(null);
-        book.setDateTaken(null);
-        bookRepository.save(book);
+    public Boolean assign(int bookId, int personId) {
+        Optional<Book> book = bookRepository.findById(bookId);
+        if (book.isEmpty()) {
+            return false;
+        } else {
+            Optional<Person> personToAssign = personRepository.findById(personId);
+            if (personToAssign.isEmpty()) {
+                return false;
+            } else {
+                book.get().setPerson(personToAssign.get());
+                book.get().setDateTaken(new Date());
+                bookRepository.save(book.get());
+            }
+        }
+        return true;
+    }
+
+    @Transactional
+    public Boolean release(int id) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isEmpty()) {
+            return false;
+        } else {
+            book.get().setPerson(null);
+            book.get().setDateTaken(null);
+            bookRepository.save(book.get());
+        }
+        return true;
     }
 
     public List<Book> findByTitleStartingWith(String title) {

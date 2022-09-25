@@ -44,9 +44,9 @@ public class BooksController {
         if (book.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
         } else {
-            Optional<Person> bookOwner = bookService.getBookOwner(id);
-            if (bookOwner.isPresent()) {
-                model.addAttribute("owner", bookOwner.get());
+            Person bookOwner =  book.get().getPerson();
+            if (Objects.nonNull(bookOwner)) {
+                model.addAttribute("owner", bookOwner);
             } else {
                 model.addAttribute("people", personService.findAll());
             }
@@ -90,18 +90,17 @@ public class BooksController {
         if (bindingResult.hasErrors()) {
             return "books/edit";
         }
-        bookService.update(id, book);
+        if (!bookService.update(id, book)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
+        }
 
         return "redirect:/books/" + id;
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable("id") int id) {
-        Optional<Book> book = bookService.findOne(id);
-        if (book.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
-        } else {
-            bookService.delete(id);
+        if (!bookService.delete(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
         }
 
         return "redirect:/books/";
@@ -109,17 +108,8 @@ public class BooksController {
 
     @PostMapping("/{id}/assign")
     public String assign(@PathVariable("id") int id, @ModelAttribute("person") Person person) {
-        Optional<Book> book = bookService.findOne(id);
-        int personId = person.getId();
-        if (book.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
-        } else {
-            Optional<Person> personToAssign = personService.findOne(personId);
-            if (personToAssign.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
-            } else {
-                bookService.assign(book.get(), personToAssign.get());
-            }
+        if (!bookService.assign(id, person.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
         }
 
         return "redirect:/books/" + id;
@@ -127,19 +117,15 @@ public class BooksController {
 
     @PostMapping("/{id}/release")
     public String release(@PathVariable("id") int id) {
-        Optional<Book> book = bookService.findOne(id);
-        if (book.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
-        } else {
-            bookService.release(book.get());
+        if (!bookService.release(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
         }
 
         return "redirect:/books/" + id;
     }
 
     @GetMapping("/search")
-    public String search(@RequestParam(value = "text", required = false) String text,
-                         Model model) {
+    public String search(@RequestParam(value = "text", required = false) String text, Model model) {
         if (Objects.nonNull(text)) {
             if (text.equals("")) {
                 return "redirect:/books/search";
@@ -147,6 +133,7 @@ public class BooksController {
             model.addAttribute("text", text);
             model.addAttribute("books", bookService.findByTitleStartingWith(text));
         }
+
         return "/books/search";
     }
 }

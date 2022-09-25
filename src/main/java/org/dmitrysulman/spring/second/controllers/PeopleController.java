@@ -41,7 +41,7 @@ public class PeopleController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         } else {
             model.addAttribute("person", person.get());
-            model.addAttribute("books", personService.getBooksOfPerson(person.get()));
+            model.addAttribute("books", personService.getBooksOfPersonById(person.get().getId()));
         }
 
         return "people/show";
@@ -83,18 +83,17 @@ public class PeopleController {
         if (bindingResult.hasErrors()) {
             return "people/edit";
         }
-        personService.update(id, person);
+        if (!personService.update(id, person)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
+        }
 
         return "redirect:/people/" + id;
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable("id") int id) {
-        Optional<Person> person = personService.findOne(id);
-        if (person.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        } else {
-            personService.delete(id);
+        if (!personService.delete(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad request");
         }
 
         return "redirect:/people/";

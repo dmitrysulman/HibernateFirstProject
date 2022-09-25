@@ -15,7 +15,7 @@
         <hr>
         <strong>Books:</strong>
         <div th:each="book : ${books}">
-            <a th:text="${book.getTitle()} + ', ' + ${book.getAuthor()} + ', ' + ${book.getYear()}" th:href="@{/books/{id}(id=${book.getId()})}"></a>
+            <a th:style="${book.getBookOverdue()} ? 'color: red' : ''" th:text="${book.getTitle()} + ', ' + ${book.getAuthor()} + ', ' + ${book.getYear()}" th:href="@{/books/{id}(id=${book.getId()})}"></a>
         </div>
     </div>
     <hr>
